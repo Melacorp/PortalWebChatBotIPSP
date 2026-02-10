@@ -45,15 +45,17 @@ export const chatbotService = {
     return apiClient.patch<ApiResponse<NumeroChatBot>>(`${BASE_PATH}/${id}/acceso`, { acceso });
   },
 
-  // Agregar/quitar reportes
+  // Actualizar reportes por sector
   async updateReportes(
     id: string,
-    accion: 'agregar' | 'quitar',
-    reporte: string
+    sector: string,
+    accion: 'agregar' | 'quitar' | 'set',
+    subsector: string
   ): Promise<ApiResponse<NumeroChatBot>> {
     return apiClient.patch<ApiResponse<NumeroChatBot>>(`${BASE_PATH}/${id}/reportes`, {
+      sector,
       accion,
-      reporte,
+      subsector,
     });
   },
 

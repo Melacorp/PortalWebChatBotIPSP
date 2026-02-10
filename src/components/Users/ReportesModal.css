@@ -1,0 +1,295 @@
+.reportes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s;
+}
+
+.reportes-modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s;
+}
+
+.reportes-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.reportes-modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.user-info {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.reportes-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  transition: all 0.2s;
+  border-radius: 6px;
+}
+
+.reportes-modal-close:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.reportes-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Sector Cards */
+.sector-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+  background: white;
+}
+
+.sector-card.has-access {
+  border-color: #4a90e2;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.15);
+}
+
+.sector-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: #f8f9fa;
+  transition: background 0.2s;
+}
+
+.sector-card-header:hover {
+  background: #eef1f5;
+}
+
+.sector-card.has-access .sector-card-header {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+}
+
+.sector-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sector-info h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.sector-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #e0e0e0;
+  color: #666;
+}
+
+.sector-status.active {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: #999;
+  transition: transform 0.3s;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.sector-card-body {
+  padding: 20px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Subsector Items */
+.subsector-item {
+  padding: 10px 0;
+}
+
+.subsector-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: -8px -12px;
+}
+
+.subsector-checkbox:hover {
+  background: rgba(74, 144, 226, 0.05);
+}
+
+.subsector-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #4a90e2;
+  flex-shrink: 0;
+}
+
+.subsector-checkbox input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.subsector-name {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+}
+
+.subsector-name.all {
+  font-weight: 600;
+  color: #4a90e2;
+}
+
+.subsector-name.disabled {
+  color: #999;
+}
+
+.subsector-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 16px 0;
+}
+
+.subsector-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+}
+
+.subsector-hint {
+  font-size: 13px;
+  color: #666;
+  margin: 12px 0 0 0;
+  padding: 12px;
+  background: #fff8e1;
+  border-radius: 8px;
+  border-left: 3px solid #ffa726;
+}
+
+/* Footer */
+.reportes-modal-footer {
+  padding: 20px 28px;
+  border-top: 2px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-done {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+}
+
+.btn-done:hover:not(:disabled) {
+  background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.btn-done:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .reportes-modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .reportes-modal-header {
+    padding: 20px;
+  }
+
+  .reportes-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .reportes-modal-body {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+
+  .sector-card-header {
+    padding: 14px 16px;
+  }
+
+  .sector-info h3 {
+    font-size: 16px;
+  }
+
+  .sector-card-body {
+    padding: 16px;
+  }
+
+  .reportes-modal-footer {
+    padding: 16px 20px;
+  }
+}

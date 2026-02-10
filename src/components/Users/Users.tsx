@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { chatbotService } from '../../services/chatbot.service';
 import { NumeroChatBot, CreateNumeroChatBotDTO, AccesoType } from '../../types/chatbot.types';
-import { REPORTE_LABELS } from '../../config/reportes.config';
+import { ReportesAcceso } from '../../config/reportes.config';
 import UserModal from './UserModal';
+import ReportesModal from './ReportesModal';
+import Dialog from '../common/Dialog';
+import { useDialog } from '../../hooks/useDialog';
 import './Users.css';
 
 export default function Users() {
@@ -12,10 +15,10 @@ export default function Users() {
   const [filterAcceso, setFilterAcceso] = useState<'all' | AccesoType>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<NumeroChatBot | null>(null);
+  const [isReportesModalOpen, setIsReportesModalOpen] = useState(false);
+  const [userForReportes, setUserForReportes] = useState<NumeroChatBot | null>(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  const dialog = useDialog();
 
   const loadUsers = async () => {
     try {
@@ -26,11 +29,19 @@ export default function Users() {
       }
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
-      alert('Error al cargar los usuarios del chatbot');
+      dialog.showError(
+        'Error al Cargar',
+        'No se pudieron cargar los usuarios del chatbot. Por favor, intenta de nuevo.'
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch =
@@ -48,11 +59,17 @@ export default function Users() {
       const response = await chatbotService.create(data);
       if (response.ok) {
         await loadUsers();
-        alert('Usuario creado correctamente');
+        dialog.showSuccess(
+          '¡Usuario Creado!',
+          'El usuario ha sido creado exitosamente en el sistema.'
+        );
       }
     } catch (error) {
       console.error('Error al crear usuario:', error);
-      alert(error instanceof Error ? error.message : 'Error al crear usuario');
+      dialog.showError(
+        'Error al Crear Usuario',
+        error instanceof Error ? error.message : 'Ocurrió un error al crear el usuario. Por favor, intenta de nuevo.'
+      );
       throw error;
     }
   };
@@ -64,29 +81,46 @@ export default function Users() {
       const response = await chatbotService.update(selectedUser._id, data);
       if (response.ok) {
         await loadUsers();
-        alert('Usuario actualizado correctamente');
+        dialog.showSuccess(
+          '¡Usuario Actualizado!',
+          'Los datos del usuario han sido actualizados correctamente.'
+        );
       }
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
-      alert(error instanceof Error ? error.message : 'Error al actualizar usuario');
+      dialog.showError(
+        'Error al Actualizar',
+        error instanceof Error ? error.message : 'Ocurrió un error al actualizar el usuario. Por favor, intenta de nuevo.'
+      );
       throw error;
     }
   };
 
   const handleDeleteUser = async (id: string, nombre: string) => {
-    if (!window.confirm(`¿Está seguro de eliminar al usuario "${nombre}"?`)) {
-      return;
-    }
+    const confirmed = await dialog.showConfirm(
+      '¿Eliminar Usuario?',
+      `¿Estás seguro de que deseas eliminar al usuario "${nombre}"? Esta acción no se puede deshacer.`,
+      'Eliminar',
+      'Cancelar'
+    );
+
+    if (!confirmed) return;
 
     try {
       const response = await chatbotService.delete(id);
       if (response.ok) {
         await loadUsers();
-        alert('Usuario eliminado correctamente');
+        dialog.showSuccess(
+          'Usuario Eliminado',
+          'El usuario ha sido eliminado correctamente del sistema.'
+        );
       }
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
-      alert(error instanceof Error ? error.message : 'Error al eliminar usuario');
+      dialog.showError(
+        'Error al Eliminar',
+        error instanceof Error ? error.message : 'Ocurrió un error al eliminar el usuario. Por favor, intenta de nuevo.'
+      );
     }
   };
 
@@ -98,7 +132,10 @@ export default function Users() {
       }
     } catch (error) {
       console.error('Error al cambiar acceso:', error);
-      alert(error instanceof Error ? error.message : 'Error al cambiar acceso');
+      dialog.showError(
+        'Error al Cambiar Acceso',
+        error instanceof Error ? error.message : 'Ocurrió un error al cambiar el nivel de acceso. Por favor, intenta de nuevo.'
+      );
     }
   };
 
@@ -119,12 +156,10 @@ export default function Users() {
 
   const getAccesoColor = (acceso: AccesoType) => {
     switch (acceso) {
-      case 'all':
+      case 'permitido':
         return '#27ae60';
-      case 'limitado':
-        return '#f39c12';
       case 'pendiente':
-        return '#3498db';
+        return '#f39c12';
       case 'bloqueado':
         return '#e74c3c';
       default:
@@ -132,29 +167,29 @@ export default function Users() {
     }
   };
 
-  const getAccesoLabel = (acceso: AccesoType) => {
-    switch (acceso) {
-      case 'all':
-        return 'Completo';
-      case 'limitado':
-        return 'Limitado';
-      case 'pendiente':
-        return 'Pendiente';
-      case 'bloqueado':
-        return 'Bloqueado';
-      default:
-        return acceso;
+  const getReportesSummary = (reportes: ReportesAcceso): { count: number; hasAccess: boolean } => {
+    if (!reportes) {
+      return { count: 0, hasAccess: false };
     }
+
+    let count = 0;
+    Object.values(reportes).forEach((subsectores) => {
+      if (subsectores.length > 0) {
+        count++;
+      }
+    });
+
+    return { count, hasAccess: count > 0 };
   };
 
-  const formatReportes = (reportes: string[]): string => {
-    if (!reportes || reportes.length === 0) {
-      return 'Ninguno';
-    }
-    if (reportes.includes('all')) {
-      return REPORTE_LABELS.all;
-    }
-    return reportes.map(r => REPORTE_LABELS[r] || r).join(', ');
+  const handleOpenReportes = (user: NumeroChatBot) => {
+    setUserForReportes(user);
+    setIsReportesModalOpen(true);
+  };
+
+  const handleCloseReportes = () => {
+    setIsReportesModalOpen(false);
+    setUserForReportes(null);
   };
 
   if (loading) {
@@ -190,10 +225,9 @@ export default function Users() {
             className="filter-select"
           >
             <option value="all">Todos los accesos</option>
-            <option value="all">Acceso Completo</option>
-            <option value="limitado">Acceso Limitado</option>
-            <option value="pendiente">Pendientes</option>
-            <option value="bloqueado">Bloqueados</option>
+            <option value="permitido">Permitido</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="bloqueado">Bloqueado</option>
           </select>
 
           <button className="btn-primary" onClick={openCreateModal}>
@@ -216,13 +250,13 @@ export default function Users() {
         <div className="stat-card">
           <div className="stat-icon" style={{ background: '#27ae60' }}>✓</div>
           <div className="stat-content">
-            <div className="stat-value">{users.filter(u => u.acceso === 'all').length}</div>
-            <div className="stat-label">Acceso Completo</div>
+            <div className="stat-value">{users.filter(u => u.acceso === 'permitido').length}</div>
+            <div className="stat-label">Permitidos</div>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#3498db' }}>⏳</div>
+          <div className="stat-icon" style={{ background: '#f39c12' }}>⏳</div>
           <div className="stat-content">
             <div className="stat-value">{users.filter(u => u.acceso === 'pendiente').length}</div>
             <div className="stat-label">Pendientes</div>
@@ -286,18 +320,29 @@ export default function Users() {
                       className="acceso-select"
                       style={{ borderColor: getAccesoColor(user.acceso) }}
                     >
-                      <option value="all">Completo</option>
-                      <option value="limitado">Limitado</option>
+                      <option value="permitido">Permitido</option>
                       <option value="pendiente">Pendiente</option>
                       <option value="bloqueado">Bloqueado</option>
                     </select>
                   </td>
                   <td>
-                    <div className="reportes-badge-container">
-                      <span className="reportes-badge" title={formatReportes(user.reportes)}>
-                        {formatReportes(user.reportes)}
-                      </span>
-                    </div>
+                    <button
+                      className="btn-reportes"
+                      onClick={() => handleOpenReportes(user)}
+                      title="Ver y gestionar reportes"
+                    >
+                      {(() => {
+                        const { count, hasAccess } = getReportesSummary(user.reportes);
+                        return (
+                          <>
+                            <span className="reportes-icon">📊</span>
+                            <span className="reportes-text">
+                              {hasAccess ? `${count} sector${count > 1 ? 'es' : ''}` : 'Sin acceso'}
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </button>
                   </td>
                   <td>{new Date(user.createdAt).toLocaleDateString('es-ES')}</td>
                   <td>
@@ -329,8 +374,29 @@ export default function Users() {
         isOpen={isModalOpen}
         onClose={closeModal}
         onSave={selectedUser ? handleUpdateUser : handleCreateUser}
+        onReload={loadUsers}
         user={selectedUser}
         title={selectedUser ? 'Editar Usuario ChatBot' : 'Nuevo Usuario ChatBot'}
+      />
+
+      {userForReportes && (
+        <ReportesModal
+          isOpen={isReportesModalOpen}
+          onClose={handleCloseReportes}
+          user={userForReportes}
+          onUpdate={loadUsers}
+        />
+      )}
+
+      <Dialog
+        isOpen={dialog.isOpen}
+        type={dialog.config.type}
+        title={dialog.config.title}
+        message={dialog.config.message}
+        confirmText={dialog.config.confirmText}
+        cancelText={dialog.config.cancelText}
+        onConfirm={dialog.handleConfirm}
+        onCancel={dialog.handleCancel}
       />
     </div>
   );

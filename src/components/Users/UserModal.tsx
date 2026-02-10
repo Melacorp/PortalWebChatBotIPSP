@@ -1,24 +1,30 @@
 import { useState, FormEvent, useEffect } from 'react';
-import { NumeroChatBot, CreateNumeroChatBotDTO, AccesoType } from '../../types/chatbot.types';
-import { REPORTES_DISPONIBLES, REPORTE_LABELS } from '../../config/reportes.config';
+import { NumeroChatBot, CreateNumeroChatBotDTO } from '../../types/chatbot.types';
+import { REPORTES_DEFAULT } from '../../config/reportes.config';
+import ReportesModal from './ReportesModal';
+import Dialog from '../common/Dialog';
+import { useDialog } from '../../hooks/useDialog';
 import './UserModal.css';
 
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: CreateNumeroChatBotDTO) => Promise<void>;
+  onReload?: () => Promise<void>;
   user?: NumeroChatBot | null;
   title: string;
 }
 
-export default function UserModal({ isOpen, onClose, onSave, user, title }: UserModalProps) {
+export default function UserModal({ isOpen, onClose, onSave, onReload, user, title }: UserModalProps) {
+  const [isReportesModalOpen, setIsReportesModalOpen] = useState(false);
+  const dialog = useDialog();
   const [formData, setFormData] = useState<CreateNumeroChatBotDTO>({
     nombre: '',
     correo: '',
     numero: '',
     numero_lid: '',
-    acceso: 'all',
-    reportes: ['all'],
+    acceso: 'permitido',
+    reportes: REPORTES_DEFAULT,
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CreateNumeroChatBotDTO, string>>>({});
@@ -40,8 +46,8 @@ export default function UserModal({ isOpen, onClose, onSave, user, title }: User
         correo: '',
         numero: '',
         numero_lid: '',
-        acceso: 'all',
-        reportes: ['all'],
+        acceso: 'permitido',
+        reportes: REPORTES_DEFAULT,
       });
     }
     setErrors({});
@@ -81,12 +87,32 @@ export default function UserModal({ isOpen, onClose, onSave, user, title }: User
 
     setIsSubmitting(true);
     try {
-      await onSave(formData);
+      // Excluir reportes del payload - se gestionan por separado
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { reportes, ...dataToSend } = formData;
+      await onSave(dataToSend);
       onClose();
     } catch (error) {
       console.error('Error al guardar:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleOpenReportesModal = () => {
+    if (!user) {
+      dialog.showWarning(
+        'Usuario No Creado',
+        'Primero debes crear el usuario antes de gestionar sus reportes.'
+      );
+      return;
+    }
+    setIsReportesModalOpen(true);
+  };
+
+  const handleReportesUpdate = async () => {
+    if (onReload) {
+      await onReload();
     }
   };
 
@@ -96,31 +122,6 @@ export default function UserModal({ isOpen, onClose, onSave, user, title }: User
     if (errors[name as keyof CreateNumeroChatBotDTO]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  };
-
-  const handleReporteToggle = (reporte: string) => {
-    setFormData(prev => {
-      const currentReportes = prev.reportes || [];
-
-      if (reporte === 'all') {
-        return { ...prev, reportes: ['all'] };
-      }
-
-      const filteredReportes = currentReportes.filter(r => r !== 'all');
-
-      if (filteredReportes.includes(reporte)) {
-        const newReportes = filteredReportes.filter(r => r !== reporte);
-        return { ...prev, reportes: newReportes.length === 0 ? ['all'] : newReportes };
-      } else {
-        return { ...prev, reportes: [...filteredReportes, reporte] };
-      }
-    });
-  };
-
-  const isReporteSelected = (reporte: string): boolean => {
-    const reportes = formData.reportes || [];
-    if (reportes.includes('all')) return reporte === 'all';
-    return reportes.includes(reporte);
   };
 
   if (!isOpen) return null;
@@ -200,47 +201,37 @@ export default function UserModal({ isOpen, onClose, onSave, user, title }: User
               value={formData.acceso}
               onChange={handleChange}
             >
-              <option value="all">Acceso Completo</option>
-              <option value="limitado">Acceso Limitado</option>
-              <option value="pendiente">Pendiente de Aprobación</option>
+              <option value="permitido">Permitido</option>
+              <option value="pendiente">Pendiente</option>
               <option value="bloqueado">Bloqueado</option>
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Reportes Disponibles</label>
-            <div className="reportes-selector">
-              <div className="reporte-option">
-                <input
-                  type="checkbox"
-                  id="reporte-all"
-                  checked={isReporteSelected('all')}
-                  onChange={() => handleReporteToggle('all')}
-                />
-                <label htmlFor="reporte-all" className="reporte-label">
-                  {REPORTE_LABELS.all}
-                </label>
-              </div>
-              <div className="reportes-divider"></div>
-              {REPORTES_DISPONIBLES.map((reporte) => (
-                <div key={reporte} className="reporte-option">
-                  <input
-                    type="checkbox"
-                    id={`reporte-${reporte}`}
-                    checked={isReporteSelected(reporte)}
-                    onChange={() => handleReporteToggle(reporte)}
-                    disabled={isReporteSelected('all')}
-                  />
-                  <label
-                    htmlFor={`reporte-${reporte}`}
-                    className={`reporte-label ${isReporteSelected('all') ? 'disabled' : ''}`}
-                  >
-                    {REPORTE_LABELS[reporte] || reporte}
-                  </label>
-                </div>
-              ))}
+          {user && (
+            <div className="form-group">
+              <label>Accesos a Reportes</label>
+              <button
+                type="button"
+                className="btn-manage-reportes"
+                onClick={handleOpenReportesModal}
+              >
+                <span>📊</span>
+                <span>Gestionar Accesos a Reportes</span>
+              </button>
+              <p className="help-text">
+                Administra los accesos a reportes por sector y subsector
+              </p>
             </div>
-          </div>
+          )}
+
+          {!user && (
+            <div className="form-group">
+              <label>Accesos a Reportes</label>
+              <p className="info-box">
+                ℹ️ Los accesos a reportes se podrán configurar después de crear el usuario
+              </p>
+            </div>
+          )}
 
           <div className="modal-actions">
             <button
@@ -261,6 +252,26 @@ export default function UserModal({ isOpen, onClose, onSave, user, title }: User
           </div>
         </form>
       </div>
+
+      {user && (
+        <ReportesModal
+          isOpen={isReportesModalOpen}
+          onClose={() => setIsReportesModalOpen(false)}
+          user={user}
+          onUpdate={handleReportesUpdate}
+        />
+      )}
+
+      <Dialog
+        isOpen={dialog.isOpen}
+        type={dialog.config.type}
+        title={dialog.config.title}
+        message={dialog.config.message}
+        confirmText={dialog.config.confirmText}
+        cancelText={dialog.config.cancelText}
+        onConfirm={dialog.handleConfirm}
+        onCancel={dialog.handleCancel}
+      />
     </div>
   );
 }

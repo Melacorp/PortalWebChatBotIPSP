@@ -350,24 +350,37 @@
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
-.reportes-badge-container {
+/* Botón de Reportes en Tabla */
+.btn-reportes {
   display: flex;
   align-items: center;
-  max-width: 200px;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 2px solid #4a90e2;
+  border-radius: 6px;
+  background: white;
+  color: #4a90e2;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.reportes-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+.btn-reportes:hover {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 100%);
+  border-color: #357abd;
+  color: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+}
+
+.btn-reportes .reportes-icon {
+  font-size: 16px;
+}
+
+.btn-reportes .reportes-text {
+  font-size: 13px;
 }
 
 /* Responsive */

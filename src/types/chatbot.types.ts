@@ -1,4 +1,6 @@
-export type AccesoType = 'all' | 'pendiente' | 'bloqueado' | 'limitado';
+import { ReportesAcceso } from '../config/reportes.config';
+
+export type AccesoType = 'permitido' | 'pendiente' | 'bloqueado';
 
 export interface NumeroChatBot {
   _id: string;
@@ -7,7 +9,7 @@ export interface NumeroChatBot {
   numero: string;
   numero_lid: string;
   acceso: AccesoType;
-  reportes: string[];
+  reportes: ReportesAcceso;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,7 +20,7 @@ export interface CreateNumeroChatBotDTO {
   numero: string;
   numero_lid: string;
   acceso?: AccesoType;
-  reportes?: string[];
+  reportes?: ReportesAcceso;
 }
 
 export interface UpdateNumeroChatBotDTO {
@@ -27,7 +29,7 @@ export interface UpdateNumeroChatBotDTO {
   numero?: string;
   numero_lid?: string;
   acceso?: AccesoType;
-  reportes?: string[];
+  reportes?: ReportesAcceso;
 }
 
 export interface ApiResponse<T> {
