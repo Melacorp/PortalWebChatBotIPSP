@@ -1,61 +1,62 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import logoSantaPriscila from '../../assets/logo_SantaPriscila.png';
-import logoMelacorp from '../../assets/melacorp.png';
-import './Login.css';
+import { useState } from "react";
+import type { FormEvent, ChangeEvent } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import logoSantaPriscila from "../../assets/logo_SantaPriscila.png";
+import logoMelacorp from "../../assets/melacorp.png";
+import "./Login.css";
 
 export default function Login() {
   const { login, isLoading } = useAuth();
   const [formData, setFormData] = useState({
-    identifier: '',
-    password: '',
+    identifier: "",
+    password: "",
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({
-    identifier: '',
-    password: '',
-    general: '',
+    identifier: "",
+    password: "",
+    general: "",
   });
 
   const validateField = (name: string, value: string) => {
     switch (name) {
-      case 'identifier':
+      case "identifier":
         if (!value.trim()) {
-          return 'Usuario o email es requerido';
+          return "Usuario o email es requerido";
         }
         if (value.length < 3) {
-          return 'Debe tener al menos 3 caracteres';
+          return "Debe tener al menos 3 caracteres";
         }
-        return '';
-      case 'password':
+        return "";
+      case "password":
         if (!value) {
-          return 'Contraseña es requerida';
+          return "Contraseña es requerida";
         }
         if (value.length < 6) {
-          return 'Debe tener al menos 6 caracteres';
+          return "Debe tener al menos 6 caracteres";
         }
-        return '';
+        return "";
       default:
-        return '';
+        return "";
     }
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    const fieldValue = type === 'checkbox' ? checked : value;
+    const fieldValue = type === "checkbox" ? checked : value;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: fieldValue,
     }));
 
-    if (name !== 'rememberMe') {
+    if (name !== "rememberMe") {
       const error = validateField(name, value);
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [name]: error,
-        general: '',
+        general: "",
       }));
     }
   };
@@ -63,14 +64,21 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const identifierError = validateField('identifier', formData.identifier);
-    const passwordError = validateField('password', formData.password);
+    // Limpiar errores previos
+    setErrors({
+      identifier: "",
+      password: "",
+      general: "",
+    });
+
+    const identifierError = validateField("identifier", formData.identifier);
+    const passwordError = validateField("password", formData.password);
 
     if (identifierError || passwordError) {
       setErrors({
         identifier: identifierError,
         password: passwordError,
-        general: '',
+        general: "",
       });
       return;
     }
@@ -78,10 +86,13 @@ export default function Login() {
     try {
       await login(formData);
     } catch (error) {
-      setErrors(prev => ({
-        ...prev,
-        general: error instanceof Error ? error.message : 'Error al iniciar sesión',
-      }));
+      console.error("Error en login:", error);
+      setErrors({
+        identifier: "",
+        password: "",
+        general:
+          error instanceof Error ? error.message : "Error al iniciar sesión",
+      });
     }
   };
 
@@ -89,16 +100,18 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <img src={logoSantaPriscila} alt="Santa Priscila" className="logo-main" />
-          <h1>Portal de Administración</h1>
+          <img
+            src={logoSantaPriscila}
+            alt="Santa Priscila"
+            className="logo-main"
+          />
+          <h1>Portal de Administración del ChatBot de IPSP</h1>
           <p>Ingrese sus credenciales para continuar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form" noValidate>
           {errors.general && (
-            <div className="alert alert-error">
-              {errors.general}
-            </div>
+            <div className="alert alert-error">{errors.general}</div>
           )}
 
           <div className="form-group">
@@ -109,7 +122,7 @@ export default function Login() {
               name="identifier"
               value={formData.identifier}
               onChange={handleInputChange}
-              className={errors.identifier ? 'input-error' : ''}
+              className={errors.identifier ? "input-error" : ""}
               placeholder="Ingrese su usuario o email"
               autoComplete="username"
               disabled={isLoading}
@@ -123,12 +136,12 @@ export default function Login() {
             <label htmlFor="password">Contraseña</label>
             <div className="password-input-wrapper">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={errors.password ? 'input-error' : ''}
+                className={errors.password ? "input-error" : ""}
                 placeholder="Ingrese su contraseña"
                 autoComplete="current-password"
                 disabled={isLoading}
@@ -137,10 +150,12 @@ export default function Login() {
                 type="button"
                 className="toggle-password"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
                 disabled={isLoading}
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
+                {showPassword ? "👁️" : "👁️‍🗨️"}
               </button>
             </div>
             {errors.password && (
@@ -161,21 +176,12 @@ export default function Login() {
             </label>
           </div>
 
-          <button
-            type="submit"
-            className="btn-submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Ingresando...' : 'Ingresar'}
+          <button type="submit" className="btn-submit" disabled={isLoading}>
+            {isLoading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
 
         <div className="login-footer">
-          <p className="demo-info">
-            <strong>Usuarios de prueba:</strong><br />
-            Admin: admin / admin123<br />
-            Usuario: usuario / user123
-          </p>
           <div className="powered-by">
             <span>Powered by</span>
             <img src={logoMelacorp} alt="Melacorp" className="logo-melacorp" />

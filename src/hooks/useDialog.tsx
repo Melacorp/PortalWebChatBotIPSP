@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { DialogType } from '../components/common/Dialog';
+import { useState, useCallback } from "react";
+import type { DialogType } from "../components/common/Dialog";
 
 interface DialogConfig {
   type: DialogType;
@@ -12,20 +12,25 @@ interface DialogConfig {
 export function useDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [config, setConfig] = useState<DialogConfig>({
-    type: 'info',
-    title: '',
-    message: '',
+    type: "info",
+    title: "",
+    message: "",
   });
-  const [resolver, setResolver] = useState<((value: boolean) => void) | null>(null);
+  const [resolver, setResolver] = useState<((value: boolean) => void) | null>(
+    null,
+  );
 
-  const showDialog = useCallback((dialogConfig: DialogConfig): Promise<boolean> => {
-    setConfig(dialogConfig);
-    setIsOpen(true);
+  const showDialog = useCallback(
+    (dialogConfig: DialogConfig): Promise<boolean> => {
+      setConfig(dialogConfig);
+      setIsOpen(true);
 
-    return new Promise<boolean>((resolve) => {
-      setResolver(() => resolve);
-    });
-  }, []);
+      return new Promise<boolean>((resolve) => {
+        setResolver(() => resolve);
+      });
+    },
+    [],
+  );
 
   const handleConfirm = useCallback(() => {
     setIsOpen(false);
@@ -44,51 +49,71 @@ export function useDialog() {
   }, [resolver]);
 
   // Métodos de conveniencia
-  const showSuccess = useCallback((title: string, message: string) => {
-    return showDialog({
-      type: 'success',
-      title,
-      message,
-      confirmText: 'Aceptar',
-    });
-  }, [showDialog]);
+  const showSuccess = useCallback(
+    (title: string, message: string) => {
+      return showDialog({
+        type: "success",
+        title,
+        message,
+        confirmText: "Aceptar",
+      });
+    },
+    [showDialog],
+  );
 
-  const showError = useCallback((title: string, message: string) => {
-    return showDialog({
-      type: 'error',
-      title,
-      message,
-      confirmText: 'Aceptar',
-    });
-  }, [showDialog]);
+  const showError = useCallback(
+    (title: string, message: string) => {
+      return showDialog({
+        type: "error",
+        title,
+        message,
+        confirmText: "Aceptar",
+      });
+    },
+    [showDialog],
+  );
 
-  const showWarning = useCallback((title: string, message: string) => {
-    return showDialog({
-      type: 'warning',
-      title,
-      message,
-      confirmText: 'Aceptar',
-    });
-  }, [showDialog]);
+  const showWarning = useCallback(
+    (title: string, message: string) => {
+      return showDialog({
+        type: "warning",
+        title,
+        message,
+        confirmText: "Aceptar",
+      });
+    },
+    [showDialog],
+  );
 
-  const showInfo = useCallback((title: string, message: string) => {
-    return showDialog({
-      type: 'info',
-      title,
-      message,
-      confirmText: 'Aceptar',
-    });
-  }, [showDialog]);
+  const showInfo = useCallback(
+    (title: string, message: string) => {
+      return showDialog({
+        type: "info",
+        title,
+        message,
+        confirmText: "Aceptar",
+      });
+    },
+    [showDialog],
+  );
 
-  const showConfirm = useCallback((title: string, message: string, confirmText = 'Confirmar', cancelText = 'Cancelar') => {
-    return showDialog({
-      type: 'confirm',
-      title,
-      message,
-      confirmText,
-      cancelText,
-    });
-  }, [showDialog]);
+  const showConfirm = useCallback(
+    (
+      title: string,
+      message: string,
+      confirmText = "Confirmar",
+      cancelText = "Cancelar",
+    ) => {
+      return showDialog({
+        type: "confirm",
+        title,
+        message,
+        confirmText,
+        cancelText,
+      });
+    },
+    [showDialog],
+  );
 
   return {
     isOpen,

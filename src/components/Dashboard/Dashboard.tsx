@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import Users from '../Users/Users';
 import logoSantaPriscila from '../../assets/logo_SantaPriscila.png';
 import './Dashboard.css';

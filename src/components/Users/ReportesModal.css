@@ -16,8 +16,8 @@
   background: white;
   border-radius: 16px;
   width: 90%;
-  max-width: 700px;
-  max-height: 85vh;
+  max-width: 800px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
@@ -66,11 +66,33 @@
 
 .reportes-modal-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 20px 28px;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  padding: 20px 28px 20px 28px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  max-height: calc(90vh - 200px); /* Altura máxima menos header y footer */
+}
+
+/* Scroll styling */
+.reportes-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.reportes-modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.reportes-modal-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.reportes-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 /* Sector Cards */
@@ -80,6 +102,7 @@
   overflow: hidden;
   transition: all 0.3s;
   background: white;
+  flex-shrink: 0; /* Evita que se comprima */
 }
 
 .sector-card.has-access {
@@ -148,6 +171,24 @@
   padding: 20px;
   background: white;
   border-top: 1px solid #e0e0e0;
+  max-height: none;
+  overflow: visible;
+  display: block;
+}
+
+.subsector-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 16px 0;
+}
+
+.subsector-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
 }
 
 /* Subsector Items */
@@ -292,4 +333,78 @@
   .reportes-modal-footer {
     padding: 16px 20px;
   }
+}
+
+/* Permission Warning Small */
+.permission-warning-small {
+  color: #856404;
+  background: #fff3cd;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+/* Changes Indicator */
+.changes-indicator {
+  color: #856404;
+  font-size: 14px;
+  margin: 0;
+  padding: 8px 0;
+  font-weight: 500;
+}
+
+/* Footer Buttons */
+.footer-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-cancel-reportes {
+  padding: 12px 24px;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-reportes:hover:not(:disabled) {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+.btn-cancel-reportes:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reportes-modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Debug: Asegurar que todos los items sean visibles */
+.subsector-item {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.subsector-hint {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
 }

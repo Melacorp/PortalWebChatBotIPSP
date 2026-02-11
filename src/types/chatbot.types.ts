@@ -1,6 +1,7 @@
-import { ReportesAcceso } from '../config/reportes.config';
+import type { ReportesAcceso } from "../config/reportes.config";
 
-export type AccesoType = 'permitido' | 'pendiente' | 'bloqueado';
+export type AccesoType = "permitido" | "pendiente" | "bloqueado";
+export type RolChatBot = "usuario" | "admin" | "master";
 
 export interface NumeroChatBot {
   _id: string;
@@ -9,6 +10,7 @@ export interface NumeroChatBot {
   numero: string;
   numero_lid: string;
   acceso: AccesoType;
+  rol: RolChatBot;
   reportes: ReportesAcceso;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +22,7 @@ export interface CreateNumeroChatBotDTO {
   numero: string;
   numero_lid: string;
   acceso?: AccesoType;
+  rol?: RolChatBot;
   reportes?: ReportesAcceso;
 }
 
@@ -29,6 +32,7 @@ export interface UpdateNumeroChatBotDTO {
   numero?: string;
   numero_lid?: string;
   acceso?: AccesoType;
+  rol?: RolChatBot;
   reportes?: ReportesAcceso;
 }
 

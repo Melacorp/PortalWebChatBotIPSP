@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import type { ReportesAcceso } from '../config/reportes.config';
 import {
   NumeroChatBot,
   CreateNumeroChatBotDTO,
@@ -56,6 +57,16 @@ export const chatbotService = {
       sector,
       accion,
       subsector,
+    });
+  },
+
+  // Actualizar todos los reportes de una vez
+  async updateAllReportes(
+    id: string,
+    reportes: ReportesAcceso
+  ): Promise<ApiResponse<NumeroChatBot>> {
+    return apiClient.put<ApiResponse<NumeroChatBot>>(`${BASE_PATH}/${id}/reportes`, {
+      reportes,
     });
   },
 

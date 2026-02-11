@@ -13,10 +13,14 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
+    // Obtener token del localStorage
+    const token = localStorage.getItem('token');
+
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     };
@@ -37,9 +41,11 @@ class ApiClient {
         // Si la respuesta es JSON, intentar extraer el mensaje
         if (contentType && contentType.includes('application/json')) {
           try {
-            const error = await response.json();
-            errorMessage = error.message || errorMessage;
-          } catch {
+            const errorData = await response.json();
+            console.log('[API] Error Response:', errorData);
+            errorMessage = errorData.message || errorMessage;
+          } catch (parseError) {
+            console.error('[API] Failed to parse error response:', parseError);
             // Si falla al parsear, usar el mensaje por defecto
           }
         } else {
@@ -49,6 +55,7 @@ class ApiClient {
           errorMessage = `Error del servidor: La ruta "${endpoint}" no devolvió JSON. Verifica que el endpoint sea correcto.`;
         }
 
+        console.error('[API] Throwing error:', errorMessage);
         throw new Error(errorMessage);
       }
 

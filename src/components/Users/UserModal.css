@@ -382,3 +382,23 @@
     font-size: 13px;
   }
 }
+
+
+/* Permission Warning */
+.permission-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin: 0 24px 16px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 14px;
+}
+
+.permission-warning .warning-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}

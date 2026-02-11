@@ -412,3 +412,44 @@
   }
 }
 }
+
+/* Rol Badges */
+.rol-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rol-badge.rol-usuario {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #90caf9;
+}
+
+.rol-badge.rol-admin {
+  background: #fff3e0;
+  color: #f57c00;
+  border: 1px solid #ffb74d;
+}
+
+.rol-badge.rol-master {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #ce93d8;
+}
+
+/* Disabled buttons styling */
+.btn-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.acceso-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

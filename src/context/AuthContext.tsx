@@ -1,65 +1,58 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { User, LoginCredentials, AuthContextType } from '../types/auth.types';
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock users for development
-const MOCK_USERS = [
-  {
-    id: '1',
-    username: 'admin',
-    email: 'admin@santapriscila.com',
-    password: 'admin123',
-    name: 'Administrador',
-    role: 'admin' as const,
-  },
-  {
-    id: '2',
-    username: 'usuario',
-    email: 'usuario@santapriscila.com',
-    password: 'user123',
-    name: 'Usuario Demo',
-    role: 'user' as const,
-  },
-];
+import { useState, useEffect, type ReactNode } from "react";
+import type { User, LoginCredentials } from "../types/auth.types";
+import { AuthContext } from "./authContext";
+import { authService } from "../services/auth.service";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Verificar token al cargar la aplicación
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        const response = await authService.verifyToken();
+        if (response.ok && response.data) {
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        console.error("Error al verificar sesión:", error);
+        authService.clearAuth();
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    verifySession();
+  }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     setIsLoading(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const response = await authService.login(credentials);
 
-    const mockUser = MOCK_USERS.find(
-      u =>
-        (u.username === credentials.identifier || u.email === credentials.identifier) &&
-        u.password === credentials.password
-    );
-
-    if (!mockUser) {
+      if (response.ok && response.data) {
+        setUser(response.data.user);
+      } else {
+        throw new Error(response.message || "Error al iniciar sesión");
+      }
+    } finally {
       setIsLoading(false);
-      throw new Error('Usuario o contraseña incorrectos');
     }
-
-    const { password, ...userWithoutPassword } = mockUser;
-    setUser(userWithoutPassword);
-
-    if (credentials.rememberMe) {
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    }
-
-    setIsLoading(false);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    authService.clearAuth();
   };
 
   return (
@@ -68,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        isInitializing,
         login,
         logout,
       }}
@@ -75,12 +69,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }
