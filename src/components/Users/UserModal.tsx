@@ -4,9 +4,13 @@ import type {
   CreateNumeroChatBotDTO,
 } from "../../types/chatbot.types";
 import { REPORTES_DEFAULT } from "../../config/reportes.config";
-import { canEditChatbotUser, getEditPermissionMessage } from "../../utils/permissions";
+import {
+  canEditChatbotUser,
+  getEditPermissionMessage,
+} from "../../utils/permissions";
 import { useAuth } from "../../hooks/useAuth";
 import Dialog from "../common/Dialog";
+import Tooltip from "../common/Tooltip";
 import { useDialog } from "../../hooks/useDialog";
 import "./UserModal.css";
 
@@ -23,7 +27,6 @@ export default function UserModal({
   isOpen,
   onClose,
   onSave,
-  onReload,
   user,
   title,
 }: UserModalProps) {
@@ -79,12 +82,15 @@ export default function UserModal({
       newErrors.correo = "Formato de correo inválido";
     }
 
-    if (!formData.numero.trim()) {
-      newErrors.numero = "El número es requerido";
-    }
+    // Validar que al menos uno de los dos esté presente
+    const hasNumero = formData.numero.trim().length > 0;
+    const hasNumeroLid = formData.numero_lid.trim().length > 0;
 
-    if (!formData.numero_lid.trim()) {
-      newErrors.numero_lid = "El número LID es requerido";
+    if (!hasNumero && !hasNumeroLid) {
+      newErrors.numero =
+        "Debe proporcionar al menos el número de teléfono o el número LID";
+      newErrors.numero_lid =
+        "Debe proporcionar al menos el número de teléfono o el número LID";
     }
 
     setErrors(newErrors);
@@ -126,7 +132,8 @@ export default function UserModal({
 
   // Verificar permisos de edición
   const canEdit = user ? canEditChatbotUser(portalUser, user.rol) : true;
-  const permissionMessage = user && !canEdit ? getEditPermissionMessage(portalUser, user.rol) : "";
+  const permissionMessage =
+    user && !canEdit ? getEditPermissionMessage(portalUser, user.rol) : "";
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -182,53 +189,35 @@ export default function UserModal({
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="numero">Número de Teléfono *</label>
+              <label htmlFor="numero">Número de Teléfono</label>
               <input
                 type="tel"
                 id="numero"
                 name="numero"
-                value={formData.numero}
-                onChange={handleChange}
-                className={errors.numero ? "input-error" : ""}
-                placeholder="1234567890"
-                disabled={!canEdit}
+                value={formData.numero || "Sin datos"}
+                className="input-readonly"
+                readOnly
               />
-              {errors.numero && (
-                <span className="error-text">{errors.numero}</span>
-              )}
+              <p className="help-text">Este campo no se puede editar</p>
             </div>
 
             <div className="form-group">
-              <label htmlFor="numero_lid">Número LID *</label>
+              <label htmlFor="numero_lid">
+                Número LID
+                <Tooltip content='LID (Link ID): Es la "identidad digital" fija de tu WhatsApp. es un identificador interno introducido en 2025 para aumentar la privacidad y permite que el sistema te reconozca siempre como el mismo usuario, sin importar qué número de teléfono tengas vinculado en ese momento.'>
+                  <span className="info-icon">ⓘ</span>
+                </Tooltip>
+              </label>
               <input
                 type="text"
                 id="numero_lid"
                 name="numero_lid"
-                value={formData.numero_lid}
-                onChange={handleChange}
-                className={errors.numero_lid ? "input-error" : ""}
-                placeholder="LID123456"
-                disabled={!canEdit}
+                value={formData.numero_lid || "Sin datos"}
+                className="input-readonly"
+                readOnly
               />
-              {errors.numero_lid && (
-                <span className="error-text">{errors.numero_lid}</span>
-              )}
+              <p className="help-text">Este campo no se puede editar</p>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="acceso">Nivel de Acceso</label>
-            <select
-              id="acceso"
-              name="acceso"
-              value={formData.acceso}
-              onChange={handleChange}
-              disabled={!canEdit}
-            >
-              <option value="permitido">Permitido</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="bloqueado">Bloqueado</option>
-            </select>
           </div>
 
           <div className="modal-actions">
@@ -240,7 +229,11 @@ export default function UserModal({
             >
               Cancelar
             </button>
-            <button type="submit" className="btn-save" disabled={isSubmitting || !canEdit}>
+            <button
+              type="submit"
+              className="btn-save"
+              disabled={isSubmitting || !canEdit}
+            >
               {isSubmitting ? "Guardando..." : user ? "Actualizar" : "Crear"}
             </button>
           </div>

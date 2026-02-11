@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { chatbotService } from "../../services/chatbot.service";
+import { notificationService } from "../../services/notification.service";
 import type {
   NumeroChatBot,
   CreateNumeroChatBotDTO,
@@ -11,6 +12,7 @@ import { useAuth } from "../../hooks/useAuth";
 import UserModal from "./UserModal";
 import ReportesModal from "./ReportesModal";
 import Dialog from "../common/Dialog";
+import Tooltip from "../common/Tooltip";
 import { useDialog } from "../../hooks/useDialog";
 import "./Users.css";
 
@@ -63,28 +65,6 @@ export default function Users() {
 
     return matchesSearch && matchesAcceso;
   });
-
-  const handleCreateUser = async (data: CreateNumeroChatBotDTO) => {
-    try {
-      const response = await chatbotService.create(data);
-      if (response.ok) {
-        await loadUsers();
-        dialog.showSuccess(
-          "¡Usuario Creado!",
-          "El usuario ha sido creado exitosamente en el sistema.",
-        );
-      }
-    } catch (error) {
-      console.error("Error al crear usuario:", error);
-      dialog.showError(
-        "Error al Crear Usuario",
-        error instanceof Error
-          ? error.message
-          : "Ocurrió un error al crear el usuario. Por favor, intenta de nuevo.",
-      );
-      throw error;
-    }
-  };
 
   const handleUpdateUser = async (data: CreateNumeroChatBotDTO) => {
     if (!selectedUser) return;
@@ -142,9 +122,41 @@ export default function Users() {
 
   const handleChangeAcceso = async (id: string, newAcceso: AccesoType) => {
     try {
+      // Primero actualizar el acceso
       const response = await chatbotService.updateAcceso(id, newAcceso);
       if (response.ok) {
         await loadUsers();
+
+        // Preguntar si desea notificar al usuario
+        const shouldNotify = await dialog.showConfirm(
+          "¿Notificar al Usuario?",
+          `El acceso ha sido actualizado a "${newAcceso}". ¿Deseas notificar al usuario sobre este cambio?`,
+          "Sí, Notificar",
+          "No, Gracias",
+        );
+
+        if (shouldNotify) {
+          try {
+            await notificationService.notifyAccessChange({
+              userId: id,
+              sendEmail: true,
+              sendWhatsApp: true,
+            });
+
+            dialog.showSuccess(
+              "¡Notificación Enviada!",
+              "El usuario ha sido notificado por email y WhatsApp sobre el cambio de acceso.",
+            );
+          } catch (notifyError) {
+            console.error("Error al enviar notificación:", notifyError);
+            dialog.showError(
+              "Error al Notificar",
+              notifyError instanceof Error
+                ? notifyError.message
+                : "No se pudo enviar la notificación, pero el acceso fue actualizado correctamente.",
+            );
+          }
+        }
       }
     } catch (error) {
       console.error("Error al cambiar acceso:", error);
@@ -155,11 +167,6 @@ export default function Users() {
           : "Ocurrió un error al cambiar el nivel de acceso. Por favor, intenta de nuevo.",
       );
     }
-  };
-
-  const openCreateModal = () => {
-    setSelectedUser(null);
-    setIsModalOpen(true);
   };
 
   const openEditModal = (user: NumeroChatBot) => {
@@ -251,11 +258,6 @@ export default function Users() {
             <option value="pendiente">Pendiente</option>
             <option value="bloqueado">Bloqueado</option>
           </select>
-
-          <button className="btn-primary" onClick={openCreateModal}>
-            <span>➕</span>
-            <span>Nuevo Usuario</span>
-          </button>
         </div>
       </div>
 
@@ -315,7 +317,15 @@ export default function Users() {
             <tr>
               <th>Usuario</th>
               <th>Número</th>
-              <th>Número LID</th>
+              <th>
+                Número LID
+                <Tooltip
+                  position="bottom"
+                  content='LID (Link ID): Es la "identidad digital" fija de tu WhatsApp. es un identificador interno introducido en 2025 para aumentar la privacidad y permite que el sistema te reconozca siempre como el mismo usuario, sin importar qué número de teléfono tengas vinculado en ese momento.'
+                >
+                  <span className="info-icon">ⓘ</span>
+                </Tooltip>
+              </th>
               <th>Acceso</th>
               <th>Reportes</th>
               <th>Fecha Registro</th>
@@ -335,103 +345,122 @@ export default function Users() {
               filteredUsers.map((user) => {
                 const canEdit = canEditChatbotUser(portalUser, user.rol);
                 return (
-                <tr key={user._id}>
-                  <td>
-                    <div className="user-cell">
-                      <div className="user-avatar-small">
-                        {user.nombre.charAt(0).toUpperCase()}
+                  <tr key={user._id}>
+                    <td>
+                      <div className="user-cell">
+                        <div className="user-avatar-small">
+                          {user.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="user-name-cell">{user.nombre}</div>
+                          <div className="user-username-cell">
+                            {user.correo}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="user-name-cell">{user.nombre}</div>
-                        <div className="user-username-cell">{user.correo}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{user.numero}</td>
-                  <td>
-                    <code className="numero-lid-badge">{user.numero_lid}</code>
-                  </td>
-                  <td>
-                    <select
-                      value={user.acceso}
-                      onChange={(e) =>
-                        handleChangeAcceso(
-                          user._id,
-                          e.target.value as AccesoType,
-                        )
-                      }
-                      className="acceso-select"
-                      style={{ borderColor: getAccesoColor(user.acceso) }}
-                      disabled={!canEdit}
-                    >
-                      <option value="permitido">Permitido</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="bloqueado">Bloqueado</option>
-                    </select>
-                  </td>
-                  <td>
-                    <button
-                      className="btn-reportes"
-                      onClick={() => handleOpenReportes(user)}
-                      title="Ver y gestionar reportes"
-                    >
-                      {(() => {
-                        const { count, hasAccess } = getReportesSummary(
-                          user.reportes,
-                        );
-                        return (
-                          <>
-                            <span className="reportes-icon">📊</span>
-                            <span className="reportes-text">
-                              {hasAccess
-                                ? `${count} sector${count > 1 ? "es" : ""}`
-                                : "Sin acceso"}
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </button>
-                  </td>
-                  <td>
-                    {new Date(user.createdAt).toLocaleDateString("es-ES")}
-                  </td>
-                  <td>
-                    <div className="actions-cell">
-                      <button
-                        className="btn-action btn-edit"
-                        title={canEdit ? "Editar" : "Sin permisos para editar"}
-                        onClick={() => openEditModal(user)}
+                    </td>
+                    <td>
+                      {user.numero || (
+                        <span className="sin-datos">Sin datos</span>
+                      )}
+                    </td>
+                    <td>
+                      {user.numero_lid ? (
+                        <code className="numero-lid-badge">
+                          {user.numero_lid}
+                        </code>
+                      ) : (
+                        <span className="sin-datos">Sin datos</span>
+                      )}
+                    </td>
+                    <td>
+                      <select
+                        value={user.acceso}
+                        onChange={(e) =>
+                          handleChangeAcceso(
+                            user._id,
+                            e.target.value as AccesoType,
+                          )
+                        }
+                        className="acceso-select"
+                        style={{ borderColor: getAccesoColor(user.acceso) }}
                         disabled={!canEdit}
                       >
-                        ✏️
-                      </button>
+                        <option value="permitido">Permitido</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="bloqueado">Bloqueado</option>
+                      </select>
+                    </td>
+                    <td>
                       <button
-                        className="btn-action btn-delete"
-                        title={canEdit ? "Eliminar" : "Sin permisos para eliminar"}
-                        onClick={() => handleDeleteUser(user._id, user.nombre)}
-                        disabled={!canEdit}
+                        className="btn-reportes"
+                        onClick={() => handleOpenReportes(user)}
+                        title="Ver y gestionar reportes"
                       >
-                        🗑️
+                        {(() => {
+                          const { count, hasAccess } = getReportesSummary(
+                            user.reportes,
+                          );
+                          return (
+                            <>
+                              <span className="reportes-icon">📊</span>
+                              <span className="reportes-text">
+                                {hasAccess
+                                  ? `${count} sector${count > 1 ? "es" : ""}`
+                                  : "Sin acceso"}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              )})
+                    </td>
+                    <td>
+                      {new Date(user.createdAt).toLocaleDateString("es-ES")}
+                    </td>
+                    <td>
+                      <div className="actions-cell">
+                        <button
+                          className="btn-action btn-edit"
+                          title={
+                            canEdit ? "Editar" : "Sin permisos para editar"
+                          }
+                          onClick={() => openEditModal(user)}
+                          disabled={!canEdit}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="btn-action btn-delete"
+                          title={
+                            canEdit ? "Eliminar" : "Sin permisos para eliminar"
+                          }
+                          onClick={() =>
+                            handleDeleteUser(user._id, user.nombre)
+                          }
+                          disabled={!canEdit}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      <UserModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSave={selectedUser ? handleUpdateUser : handleCreateUser}
-        onReload={loadUsers}
-        user={selectedUser}
-        title={
-          selectedUser ? "Editar Usuario ChatBot" : "Nuevo Usuario ChatBot"
-        }
-      />
+      {selectedUser && (
+        <UserModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSave={handleUpdateUser}
+          onReload={loadUsers}
+          user={selectedUser}
+          title="Editar Usuario ChatBot"
+        />
+      )}
 
       {userForReportes && (
         <ReportesModal
