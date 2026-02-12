@@ -163,7 +163,9 @@ export default function ReportesModal({
             return (
               <div
                 key={sector}
-                ref={(el) => (sectorRefs.current[sector] = el)}
+                ref={(el) => {
+                  sectorRefs.current[sector] = el;
+                }}
                 className={`sector-card ${hasAccess ? "has-access" : ""}`}
               >
                 <div

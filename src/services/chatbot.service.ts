@@ -1,6 +1,6 @@
 import { apiClient } from './api';
 import type { ReportesAcceso } from '../config/reportes.config';
-import {
+import type {
   NumeroChatBot,
   CreateNumeroChatBotDTO,
   UpdateNumeroChatBotDTO,
