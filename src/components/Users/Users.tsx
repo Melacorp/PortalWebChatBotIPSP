@@ -8,6 +8,7 @@ import type {
 } from "../../types/chatbot.types";
 import type { ReportesAcceso } from "../../config/reportes.config";
 import { canEditChatbotUser } from "../../utils/permissions";
+import { maskLID } from "../../utils/format";
 import { useAuth } from "../../hooks/useAuth";
 import UserModal from "./UserModal";
 import ReportesModal from "./ReportesModal";
@@ -367,7 +368,7 @@ export default function Users() {
                     <td>
                       {user.numero_lid ? (
                         <code className="numero-lid-badge">
-                          {user.numero_lid}
+                          {maskLID(user.numero_lid)}
                         </code>
                       ) : (
                         <span className="sin-datos">Sin datos</span>

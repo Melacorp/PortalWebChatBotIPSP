@@ -8,6 +8,7 @@ import {
   canEditChatbotUser,
   getEditPermissionMessage,
 } from "../../utils/permissions";
+import { maskLID } from "../../utils/format";
 import { useAuth } from "../../hooks/useAuth";
 import Dialog from "../common/Dialog";
 import Tooltip from "../common/Tooltip";
@@ -212,7 +213,7 @@ export default function UserModal({
                 type="text"
                 id="numero_lid"
                 name="numero_lid"
-                value={formData.numero_lid || "Sin datos"}
+                value={maskLID(formData.numero_lid)}
                 className="input-readonly"
                 readOnly
               />

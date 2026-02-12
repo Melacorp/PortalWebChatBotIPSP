@@ -17,8 +17,11 @@ Portal Web ChatBot IPSP - A React-based web portal chatbot application built wit
 ## Development Commands
 
 ```bash
-# Start development server with HMR
+# Start development server with HMR (localhost only)
 npm run dev
+
+# Start development server accessible on local network
+npm run dev:host
 
 # Build for production
 npm run build
@@ -26,11 +29,41 @@ npm run build
 # Run linter
 npm run lint
 
-# Preview production build
+# Preview production build (localhost only)
 npm run preview
+
+# Preview production build accessible on local network
+npm run preview:host
 ```
 
 Note: The build command runs TypeScript compiler in build mode before Vite build (`tsc -b && vite build`).
+
+## Local Network Deployment
+
+The application can be deployed on a local network using several methods:
+
+### Quick Start (Windows)
+- **Development mode**: Run `start-server.bat`
+- **Production mode**: Run `start-production.bat`
+
+These scripts automatically:
+- Display your local IP address
+- Start the server accessible on the local network
+- Show connection URLs for both local and network access
+
+### Manual Deployment
+See `DEPLOYMENT.md` for detailed instructions on:
+- Development server setup
+- Production builds
+- Custom HTTP servers (serve, http-server)
+- PM2 process management
+- Firewall configuration
+- Troubleshooting
+
+### Network Access
+- Development server: `http://[YOUR_IP]:5173`
+- Production preview: `http://[YOUR_IP]:4173`
+- Find your IP: Run `ipconfig` and look for "IPv4 Address"
 
 ## Project Structure
 
