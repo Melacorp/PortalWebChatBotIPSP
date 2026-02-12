@@ -2,6 +2,9 @@
 
 Esta guía te ayudará a desplegar el Portal Web ChatBot IPSP en tu red local.
 
+> **🚀 ¿Buscas un servicio permanente que NO se cierre al cerrar la terminal?**
+> Ver: [SERVICIO-PERMANENTE.md](./SERVICIO-PERMANENTE.md) - Configuración con PM2 en puerto 5020
+
 ## 📋 Requisitos Previos
 
 - Node.js instalado (versión 18 o superior)
