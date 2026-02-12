@@ -38,32 +38,42 @@ npm run preview:host
 
 Note: The build command runs TypeScript compiler in build mode before Vite build (`tsc -b && vite build`).
 
-## Local Network Deployment
+## Deployment
 
-The application can be deployed on a local network using several methods:
+### IIS Deployment (Recommended for Windows Server)
 
-### Quick Start (Windows)
-- **Development mode**: Run `start-server.bat`
-- **Production mode**: Run `start-production.bat`
+The application is designed to be deployed on **IIS (Internet Information Services)** on Windows Server 2019.
 
-These scripts automatically:
-- Display your local IP address
-- Start the server accessible on the local network
-- Show connection URLs for both local and network access
+**Build for IIS:**
+```bash
+npm run build
+# Or use the script: build-for-iis.bat
+```
 
-### Manual Deployment
-See `DEPLOYMENT.md` for detailed instructions on:
-- Development server setup
-- Production builds
-- Custom HTTP servers (serve, http-server)
-- PM2 process management
-- Firewall configuration
+**Deployment Steps:**
+1. Build the application (`npm run build`)
+2. Copy the contents of `dist/` folder to the server
+3. Configure the site in IIS Manager (Port 5020)
+4. The `web.config` file is included for proper routing
+
+**Complete Guide:**
+See `DESPLIEGUE-IIS.md` for detailed instructions including:
+- IIS installation and configuration
+- URL Rewrite Module setup
+- SSL/HTTPS configuration
 - Troubleshooting
+- Performance optimizations
 
-### Network Access
-- Development server: `http://[YOUR_IP]:5173`
-- Production preview: `http://[YOUR_IP]:4173`
-- Find your IP: Run `ipconfig` and look for "IPv4 Address"
+**Access:**
+- `http://[SERVER_IP]:5020`
+
+### Development Server (Local only)
+
+For local development and testing:
+```bash
+npm run dev        # localhost only
+npm run dev:host   # accessible on local network (port 5173)
+```
 
 ## Project Structure
 

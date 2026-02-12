@@ -2,8 +2,8 @@
 
 Esta guía te ayudará a desplegar el Portal Web ChatBot IPSP en tu red local.
 
-> **🚀 ¿Buscas un servicio permanente que NO se cierre al cerrar la terminal?**
-> Ver: [SERVICIO-PERMANENTE.md](./SERVICIO-PERMANENTE.md) - Configuración con PM2 en puerto 5020
+> **🚀 ¿Despliegue en Windows Server 2019 con IIS?**
+> Ver: [DESPLIEGUE-IIS.md](./DESPLIEGUE-IIS.md) - Guía completa para IIS (Recomendado)
 
 ## 📋 Requisitos Previos
 
@@ -180,52 +180,17 @@ O cambia el puerto en `vite.config.ts`
 
 ---
 
-## 🎯 Mejor Práctica para Producción Local
+## 🎯 Despliegue en Producción
 
-Para un servidor permanente en red local:
+Para un servidor permanente en Windows Server, se recomienda usar **IIS (Internet Information Services)**.
 
-1. **Construir la aplicación**
-   ```bash
-   npm run build
-   ```
+**Ver guía completa:** [DESPLIEGUE-IIS.md](./DESPLIEGUE-IIS.md)
 
-2. **Instalar PM2 (gestor de procesos)**
-   ```bash
-   npm install -g pm2
-   npm install -g serve
-   ```
-
-3. **Iniciar con PM2**
-   ```bash
-   pm2 serve dist 3000 --name "portal-chatbot" --spa
-   ```
-
-4. **Configurar inicio automático**
-   ```bash
-   pm2 startup
-   pm2 save
-   ```
-
-**Comandos útiles de PM2:**
-- `pm2 list` - Ver aplicaciones corriendo
-- `pm2 logs portal-chatbot` - Ver logs
-- `pm2 restart portal-chatbot` - Reiniciar
-- `pm2 stop portal-chatbot` - Detener
-- `pm2 delete portal-chatbot` - Eliminar
-
----
-
-## 📊 Monitoreo
-
-Para monitorear el servidor:
-
-```bash
-# Con PM2
-pm2 monit
-
-# Logs en tiempo real
-pm2 logs portal-chatbot --lines 100
-```
+**Pasos resumidos:**
+1. Construir la aplicación: `npm run build`
+2. Copiar el contenido de `dist/` al servidor IIS
+3. Configurar el sitio en IIS Manager (Puerto 5020)
+4. El archivo `web.config` ya está incluido para routing
 
 ---
 
@@ -236,14 +201,13 @@ Cuando hagas cambios al código:
 **Modo desarrollo:**
 - Los cambios se aplican automáticamente (HMR)
 
-**Modo producción:**
+**Modo producción (IIS):**
 ```bash
 # 1. Reconstruir
 npm run build
 
-# 2. Reiniciar servidor
-pm2 restart portal-chatbot
-# O si usas serve manualmente, reinicia el proceso
+# 2. Copiar archivos al servidor
+# 3. Reiniciar el sitio en IIS Manager
 ```
 
 ---
