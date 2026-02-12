@@ -7,10 +7,11 @@ module.exports = {
   apps: [
     {
       name: 'portal-chatbot-ipsp',
-      script: 'npx',
-      args: 'serve -s dist -l 5020',
+      script: 'serve',
+      args: '-s dist -l 5020',
       cwd: __dirname,
       instances: 1,
+      exec_mode: 'fork',
       autorestart: true,
       watch: false,
       max_memory_restart: '500M',
